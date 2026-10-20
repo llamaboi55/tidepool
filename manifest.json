@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Tidepool — calm new tab",
   "short_name": "Tidepool",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A calm, glass new tab dashboard. Widgets, link groups, tasks, notes and focus timer. Free, open source, no ads, no account.",
   "homepage_url": "https://github.com/llamaboi55/tidepool",
   "chrome_url_overrides": {

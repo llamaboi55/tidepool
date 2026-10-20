@@ -20,9 +20,9 @@ Chrome · Edge · Brave · Opera · Vivaldi · Firefox, on Windows, macOS and Li
 
 ## Install
 
-You need Git and Node.js 18+ only to build zips; loading the extension needs nothing.
+Ready-made zips for every browser are on the [Releases](https://github.com/llamaboi55/tidepool/releases/latest) page. Store listings (Firefox Add-ons, Edge Add-ons) are on the way, so you'll be able to install with one click and get updates automatically.
 
-**One command** (any OS):
+**Build it yourself in one command** (any OS, needs Git and Node.js 18+):
 
 ```sh
 git clone https://github.com/llamaboi55/tidepool && cd tidepool && npm run build

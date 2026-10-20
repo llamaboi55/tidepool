@@ -1,6 +1,6 @@
 {
   "name": "tidepool",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A calm, glass new tab dashboard for Chrome, Edge, Brave, Opera, Vivaldi and Firefox. Free and open source.",
   "license": "MIT",
   "type": "module",

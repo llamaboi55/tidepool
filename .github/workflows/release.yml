@@ -1,0 +1,47 @@
+# Publishes a GitHub release with the Chromium and Firefox zips whenever the version in
+# manifest.json changes on main (tagged v<version>), or by hand from the Actions tab.
+# If the AMO_JWT_ISSUER and AMO_JWT_SECRET secrets are set (free API keys from
+# addons.mozilla.org), it also attaches a Mozilla-signed .xpi that Firefox installs in one click.
+name: Release
+on:
+  push:
+    branches: [main]
+    paths: ['manifest.json']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+      AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm test
+      - run: npm run build
+      - name: Read version
+        id: v
+        run: echo "version=$(node -p "require('./manifest.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Sign for Firefox
+        if: env.AMO_JWT_ISSUER != ''
+        run: |
+          npx --yes web-ext@8 sign --source-dir dist/firefox --channel unlisted \
+            --api-key "$AMO_JWT_ISSUER" --api-secret "$AMO_JWT_SECRET" --artifacts-dir dist/signed
+          mv dist/signed/*.xpi "dist/tidepool-${{ steps.v.outputs.version }}.xpi"
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.v.outputs.version }}
+          name: Tidepool v${{ steps.v.outputs.version }}
+          body: |
+            **Firefox:** open the `.xpi` (when attached) and click Add.
+            **Chrome, Edge, Brave, Opera, Vivaldi:** download the `tidepool-chromium` zip, unzip it, and load the folder (see the README).
+          files: |
+            dist/*.zip
+            dist/*.xpi
+          fail_on_unmatched_files: false
