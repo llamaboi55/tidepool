@@ -46,7 +46,9 @@ function select(value, options, onChange, label) {
 function range(value, min, max, onInput, label, suffix = '') {
   const out = h('output', {}, `${value}${suffix}`);
   const el = h('input', { type: 'range', min, max, value, 'aria-label': label });
-  el.addEventListener('input', () => { out.textContent = `${el.value}${suffix}`; onInput(Number(el.value)); });
+  const fill = () => el.style.setProperty('--fill', `${((el.value - min) / (max - min || 1)) * 100}%`);
+  fill();
+  el.addEventListener('input', () => { out.textContent = `${el.value}${suffix}`; fill(); onInput(Number(el.value)); });
   return h('span', { class: 'range' }, el, out);
 }
 
@@ -108,8 +110,19 @@ function build() {
   const name = h('input', { type: 'text', value: s.name, placeholder: 'Your name (optional)', maxlength: 40, 'aria-label': 'Your name' });
   name.addEventListener('input', () => set((st) => { st.name = name.value; }));
 
-  const accent = h('input', { type: 'color', value: s.accent, 'aria-label': 'Accent color' });
-  accent.addEventListener('input', () => set((st) => { st.accent = accent.value; }));
+  const ACCENTS = ['#7fb8a4', '#7aa7ff', '#a99bf0', '#ef9fb4', '#f2b36b', '#6cc3d5'];
+  const picker = h('input', { type: 'color', value: s.accent, 'aria-label': 'Custom accent color', title: 'Pick any color' });
+  const swatches = ACCENTS.map((c) => h('button', { type: 'button', class: 'swatch', style: { '--c': c }, dataset: { c }, 'aria-label': `Accent ${c}` }));
+  const markAccent = (c) => {
+    for (const b of swatches) b.classList.toggle('on', b.dataset.c === c.toLowerCase());
+    picker.parentElement?.classList.toggle('on', !ACCENTS.includes(c.toLowerCase()));
+  };
+  const pickAccent = (c) => { set((st) => { st.accent = c; }); markAccent(c); };
+  for (const b of swatches) b.addEventListener('click', () => { picker.value = b.dataset.c; pickAccent(b.dataset.c); });
+  picker.addEventListener('input', () => pickAccent(picker.value));
+  const accent = h('span', { class: 'swatches' }, ...swatches, h('label', { class: 'swatch custom', style: { '--c': s.accent } }, picker));
+  picker.addEventListener('input', () => picker.parentElement.style.setProperty('--c', picker.value));
+  queueMicrotask(() => markAccent(s.accent));
 
   const importInput = h('input', { type: 'file', accept: 'application/json,.json', hidden: true });
   importInput.addEventListener('change', async () => {
